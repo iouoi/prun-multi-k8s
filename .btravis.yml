@@ -1,0 +1,25 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t iouoi/react-test -f ./client/Dockerfile.dev ./client
+
+script:  
+  - docker run iouoi/react-test npm test -- --coverage
+
+after_success:  
+  - docker build -t iouoi/multi-client ./client
+  - docker build -t iouoi/multi-nginx ./nginx
+  - docker build -t iouoi/multi-server ./server
+  - docker build -t iouoi/multi-worker ./worker
+  
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  -docker push iouoi/multi-client
+  -docker push iouoi/multi-nginx
+  -docker push iouoi/multi-server
+  -docker push iouoi/multi-worker
+
+
+

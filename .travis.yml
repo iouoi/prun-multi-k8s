@@ -6,7 +6,7 @@ before_install:
   - docker build -t iouoi/react-test -f ./client/Dockerfile.dev ./client
 
 script:  # this is the primary test-running section. If any script here exit with a status other than 0, Travis CI assumes our build failed
-  - docker run iouoi/react-test npm test -- --coverage
+  - docker run iouoi/react-test npm run test -- --coverage
 
 after_success:  # add in config that'll build production version of all our projects and push them off to docker hub
   - docker build -t iouoi/multi-client ./client
