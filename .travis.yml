@@ -26,7 +26,7 @@ after_success:  # add in config that'll build production version of all our proj
 deploy:
   provider: elasticbeanstalk
   region: ap-northeast-2
-  name: multi-docker
+  app: multi-docker
   env: MultiDocker-env
   bucket_name: elasticbeanstalk-ap-northeast-2-492606371812
   bucket_path: docker-multi
