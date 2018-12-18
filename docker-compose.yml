@@ -21,7 +21,7 @@ services:
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - PGUSER=postgres
+      - PGUSER=postgres   # postgres / postgrespw / fibvalues
       - PGHOST=postgres
       - PGDATABASE=postgres
       - PGPASSWORD=postgres_password
@@ -43,3 +43,10 @@ services:
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+
+
+# Dockerrun.aws.json file
+# LINE 29: open up a port on the host/machine that is hosting all our containers, and map that to port 80 inside the container, which is the default port that nginx listens to inside the container. (same idea as LINE 12 here: maps a port inside the container to a port on the host / the machine running all those containers)
+# LINE 33: when we deploy containers on AWS EB/ECS, we have to do more explicit mapping / form up connections between different containers (not like in this file where the connection is kinda automatic as docker-compose takes care of it).  The Links are uni-directional, just one way from 'nginx' to 'client' and 'server' containers (we use 'name' and NOT 'hostname', so use 'server' and NOT 'api', for example)
+#
+#

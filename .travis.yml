@@ -23,5 +23,17 @@ after_success:  # add in config that'll build production version of all our proj
   - docker push iouoi/multi-server
   - docker push iouoi/multi-worker
 
+deploy:
+  provider: elasticbeanstalk
+  region: ap-northeast-2
+  name: multi-docker
+  env: MultiDocker-env
+  bucket_name: elasticbeanstalk-ap-northeast-2-492606371812
+  bucket_path: docker-multi
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key:
+    secure: $AWS_SECRET_KEY
 
 
