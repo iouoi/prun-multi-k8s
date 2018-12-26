@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-deployment
+spec: 
+  replicas: 3
+  selector:
+    matchLabels:
+      component: server
+  template:
+    metadata:
+      labels:
+        component: server
+    spec:
+      containers:
+        - name: server
+          image: iouoi/multi-server 
+          ports:
+            - containerPort: 5000
+          env:
+            - name: REDIS_HOST
+              value: redis-cluster-ip-service
+            - name: REDIS_PORT
+              value: '6379'
+            - name: PGUSER
+              value: postgres
+            - name: PGHOST
+              value: postgres-cluster-ip-service
+            - name: PGPORT
+              value: '5432'
+            - name: PGDATABASE
+              value: postgres
+            - name: PGPASSWORD
+              valueFrom: 
+                secretKeyRef:
+                  name: pgpassword # name of the secret that we want this env var value to come from
+                  key: PGPASSWORD  # pg123456
+
+        # 'multi-server' image (LINE 17) expects to get a handful of key value pairs along with it or env variables, which tell the multi-server(Express api) how to connect to our postgress and redis instances. So we'll come back to add on a series of env variables that we want to make sure get injected into the container created from this image. Remember, the goal is to tell the Express api how to connect to postgres and redis
+
+  # imperative command to create a secret (for password)
+  # kubectl create secret generic <secret_name> --from-literal
+  # kubectl // create (create a new obj) // secret (type of obj we'll create) // generic (type of secret. There are 3 secret types: generic key-value pair, Docker registry: to set up some auth with a custom docker registry that we'd store our images in (but we're storing our images in docker hub, so not custom auth is required), tls: for https setup) // <secret_name> (name for later reference in a pod config, when we actually want to consume/use it) // --from-literal key=value (we'll add the secret info into this command, as opposed to from a file)
+
+  # also in postgres-deployment, we want to override the images' default password, and tell it to use the new pw instead.

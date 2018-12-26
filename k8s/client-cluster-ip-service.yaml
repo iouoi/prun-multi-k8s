@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-cluster-ip-service
+spec:
+  type: ClusterIP
+  selector: 
+    # so the service we create knows what set of pods it is supposed to be providing access to
+    # in this case, this service needs to point at(properly select) 'client-deployment'
+    component: web
+  ports:  # similar to the one in 'node-port' service, but there's no 'nodePort' property, since CluterIP is not accessible from the outside world (unlike node-port)
+    - port: 3000
+      targetPort: 3000
+    

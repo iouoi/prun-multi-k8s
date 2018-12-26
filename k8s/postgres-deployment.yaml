@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postres-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: postgres
+  template:
+    metadata:
+      labels:
+        component: postgres
+    spec:
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: database-persistent-volume-claim  # name of the PVC we just wrote
+      containers:
+        - name: postgres
+          image: postgres
+          ports: 
+            - containerPort: 5432
+          volumeMounts:  # "now that we got access to the storage, here's how i want it to be used inside my container" ("Take that volume/storage, and make it available inside this container, in this way")
+            - name: postgres-storage # same name as the volumes' name above ("go back to the volumes entry, and find some piece of storage we just asked k8s for". And that piece of storage will be used for this particular 'volumeMount')
+              mountPath: /var/lib/postgresql/data # designating where inside the container this storage should be made available (anything the container stores inside this folder will be actually stored inside our volume) (similar to docker volume) (so we designate the data directory that posgress will use for storing data on the hard drive: the actual data we want to backup)
+              subPath: postgres  #'subPath': any data inside the container that is stored inside 'mountPath' will be stored in a folder called 'postrgres' inside the actual PV (only for postgres database)
+          env: 
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pgpassword
+                  key: PGPASSWORD
+
+# 203/204: Now, update the 'pod config' here and tell it that when this pod is created, it's going to need to look at the storage options available and advertised by the PVC, and make sure that you want that specific volume claim there.
+# 204: Tell this pod that when it's created, it needs to request some type of long term storage (persistent volume), that meets all the requirements that were advertised by the PVC we just put together.
+# LINE 15-18: this sets up the request on the pod to reach out to k8s and say "i need long term storage that meets requirements in this pvc object." ( => so, this allocates the storage)
+# Now, once we allocate the storage and get it available, we need to actually assign it for use, by all the containers that are in use by our pod. So, now we add in some config to the 'container' section
