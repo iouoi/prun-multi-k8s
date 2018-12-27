@@ -1,0 +1,18 @@
+sudo: required  # since we're using docker
+services:
+  - docker  # we require docker service to be preinstalled as soon as we try to run our build, b/c we need Travis to build our images and run the test container after that
+before_install:
+  - curl https://sdk.cloud.google.com | bash > /dev/null;
+  # first, install google cloud sdk, on our little instance assigned to us by Travis CI ('/dev/null')
+  - source $HOME/google-cloud-sdk/path.bash.inc
+  # look at default install directory of google cloud sdk, and source this file (some configuration that'll modify our shell inside Travis CI. We apply that config using the 'source' command')
+  - gcloud components update kubectl
+  # make sure google cloud will also install kubectl, inside our Travis environment
+  - gcloud auth activate-service-account --key-file service-account.json
+  # authorization with google cloud sdk. 'a-s-a': equivalent to the 'IAM user' system on AWS. We activate a service account, and provide a set of credentials (inside the json file)
+
+  #1. Create service account
+  #2. download the json file (service acct credentials to access our K8S cluster)
+  #3. install Travis CI CLI (used to encrypt the file and store it with Travis)
+  #4. Encrypt and upload the json file to our Travis acct
+  #5. In Travis.yml, add code to unencrypt the json file and load it into GCloud SDK (LINE 11)
