@@ -34,7 +34,7 @@ spec:
               valueFrom: 
                 secretKeyRef:
                   name: pgpassword # name of the secret that we want this env var value to come from
-                  key: PGPASSWORD  # pg123456
+                  key: PGPASSWORD  # pg123456. pgpw1234
 
         # 'multi-server' image (LINE 17) expects to get a handful of key value pairs along with it or env variables, which tell the multi-server(Express api) how to connect to our postgress and redis instances. So we'll come back to add on a series of env variables that we want to make sure get injected into the container created from this image. Remember, the goal is to tell the Express api how to connect to postgres and redis
 

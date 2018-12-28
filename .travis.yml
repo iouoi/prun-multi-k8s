@@ -1,7 +1,12 @@
 sudo: required  # since we're using docker
 services:
   - docker  # we require docker service to be preinstalled as soon as we try to run our build, b/c we need Travis to build our images and run the test container after that
+env:
+  global:
+    - SHA=$(git rev-parse HEAD) # assign the current commit sha to an env var in our Travis env (so we can access it in our 'deploy.sh' file)
+    - CLOUDSDK_CORE_DISABLE_PROMPTS=1 # configure cgloud cli, make sure that it doesn't try to display any prompts that require user input
 before_install:
+  - openssl aes-256-cbc -K $encrypted_0c35eebf403c_key -iv $encrypted_0c35eebf403c_iv -in service-account.json.enc -out service-account.json -d
   - curl https://sdk.cloud.google.com | bash > /dev/null;
   # first, install google cloud sdk, on our little instance assigned to us by Travis CI ('/dev/null')
   - source $HOME/google-cloud-sdk/path.bash.inc
@@ -16,3 +21,26 @@ before_install:
   #3. install Travis CI CLI (used to encrypt the file and store it with Travis)
   #4. Encrypt and upload the json file to our Travis acct
   #5. In Travis.yml, add code to unencrypt the json file and load it into GCloud SDK (LINE 11)
+
+  # setting project id and 'compute zone', and get the credentials
+  - gcloud config set project multi-k8s-226711
+  - gcloud config set compute/zone us-central1-a
+  - gcloud container clusters get-credentials multi-cluster
+  # tell gcloud what cluster it needs to be working with when we issue k8s related commands
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker build -t iouoi/react-test -f ./client/Dockerfile.dev ./client
+
+script: # define how to run the actual tests for our project
+  - docker run iouoi/react-test npm test -- --coverage
+
+# there's no pre-built provider/script for k8s (unlike AWS elasticbean, etc), so we have to put our own solution from scratch
+deploy:
+  provider: script
+  script: bash ./deploy.sh
+  # in the custom script file, we'll:
+  #1. Build our images, tag each one, push each to docker hub.
+  #2. Apply all configs in the 'k8s' folder
+  #3. Imperatively set latest images on each deployment
+  on:
+    branch: master
