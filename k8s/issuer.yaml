@@ -1,0 +1,12 @@
+# tell cert manager where to get certificate
+apiVersion: certmanager.k8s.io/v1alpha1 # reach into 'certmanager' bucket of objects 
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory # server that cert manager should reach out to when it tries to establish the verification process (a link to letsencrypt api that'll be used for setting up communication back and forth)
+    email: 'olive27k@gmail.com'
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    http01: {} # saying "we want to use this http process of obtaining a certificate" (there's another DNS option)

@@ -1,0 +1,20 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: doreal-page-tls # just using domain name, and indicate it's a TLS certificate
+spec:
+  secretName: doreal-page  # specifying where our cert should be stored when it's obtained by Cert Manager (the 'secret' that is created as part of the certificate)
+  issuerRef:  # reference to the issuer
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: doreal.page  # this will be put on the certificate 
+  dnsNames:   # list of all domains that should be associated with the certificate (so when user goes to the below addresses, our cert will cover it)
+    - doreal.page
+    - www.doreal.page
+  acme:
+    config:
+      - http01:
+          ingressClass: nginx
+        domains:    # the domains that the verification process will try to access
+          - doreal.page
+          - www.doreal.page
