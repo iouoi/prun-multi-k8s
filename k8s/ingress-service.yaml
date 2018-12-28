@@ -5,9 +5,21 @@ metadata:
   annotations:   # addtional config options that'll specify some higher level config around the ingress obj that gets created
     kubernetes.io/ingress.class: nginx # telling k8s that we want to create an ingress controller based on nginx project
     nginx.ingress.kubernetes.io/rewrite-target: /  # configure how our copy of nginx behaves. After sending a req to Server, rewrite the '/api' route (like we did with regex on elasticbean project. So we don't have to write '/api' on every route on the server itself. We don't want to put config inside our server that tightly coupled it to the routing that got requests to the server in the first place.)
+    certmanager.k8s.io/cluster-issuer: 'letsencrypt-prod'  # inform our ingress service that we'll use the 'letsenc' certificate ("hey you should expect to get a cert from this issuer")
+
+    # make sure the nginx server always forces user to use https traffic/connection
+    # make sure our users always get redirected over
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true' # 'true' as string since yaml file interprets differently
 spec:
+  # tell nginx that it should be serving up https traffic, and also tell it where it can get our cert from
+  tls:
+    - hosts:
+        - doreal.page
+        - www.doreal.page
+      secretName: doreal-page  # the secret that holds the cert to allow for https traffic is stored here
   rules:
-    - http:
+    - host: doreal.page  # if someone comes here, here's the set of rules to be applied to that req
+      http:
         paths: 
           - path: /
             backend:  # if req comes to path of '/', send the req to whatever pods that are governed by the service of this 'serviceName'
@@ -17,3 +29,18 @@ spec:
             backend:
               serviceName: server-cluster-ip-service
               servicePort: 5000
+    - host: www.doreal.page  
+      http:
+        paths: 
+          - path: /
+            backend:  # if req comes to path of '/', send the req to whatever pods that are governed by the service of this 'serviceName'
+              serviceName: client-cluster-ip-service
+              servicePort: 3000
+          - path: /api/
+            backend:
+              serviceName: server-cluster-ip-service
+              servicePort: 5000
+  
+
+
+           
